@@ -28,7 +28,6 @@
 	export class ReactionsModule {
 		private _filler: HTMLElement;
 		private _innerspan: HTMLElement = document.createElement("span");
-		private selectedElem: HTMLElement | undefined;
 		private previousNumber: number | undefined;
 		private containers: Array<container>=[];
 		public selectNumber: number | undefined = localStorage.getItem("selected") === undefined || localStorage.getItem("selected") === null ? Infinity: +localStorage.getItem("selected");
@@ -47,7 +46,7 @@
 				previousNumber = undefined;
 				return;
 			}
-			previousNumber = selectNum;
+				
 			this.obj.setItem(String(selectNum), String(+this.obj.getItem(String(selectNum)) + 1));
 			containers[selectNum].children[0].textContent = this.obj.getItem(String(selectNum));	
 		};
@@ -66,22 +65,19 @@
 						container.style.cssText = EMOJI_CONTAINER_STYLE;
 						if (i === this.selectNumber) {	
 							container.style.backgroundColor = "pink";
-							this.selectedElem = container;
 							this.previousNumber = this.selectNumber;
 						};
 						if (obj.getItem(String(i)) === null) obj.setItem(String(i), "0");
 						container.addEventListener("click", function (e: MouseEvent): void {
 							this.selectNumber =i;
-							if (this.selectedElem) this.selectedElem.style.backgroundColor = "";
-							this.selectedElem = (<HTMLElement>e.target);
-							this.onSelect(this.selectNumber, this.containers,this.previousNumber);
+							this.onSelect(this.selectNumber, this.containers, this.previousNumber);
+							if (this.previousNumber !== undefined) this.containers[this.previousNumber].style.backgroundColor = "";
 							if (this.previousNumber === this.selectNumber) {
 								this.previousNumber = undefined;
-								this.selectedElem.style.backgroundColor = "	";
 								localStorage.setItem("selected", "undefiend");
 							}
 							else {
-								this.selectedElem.style.backgroundColor = "pink";
+								this.containers[this.selectNumber].style.backgroundColor = "pink";
 								this.previousNumber = this.selectNumber;
 								localStorage.setItem("selected", this.selectNumber);
 							}

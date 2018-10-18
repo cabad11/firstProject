@@ -21,7 +21,6 @@ var Module;
                     previousNumber = undefined;
                     return;
                 }
-                previousNumber = selectNum;
                 this.obj.setItem(String(selectNum), String(+this.obj.getItem(String(selectNum)) + 1));
                 containers[selectNum].children[0].textContent = this.obj.getItem(String(selectNum));
             };
@@ -40,7 +39,6 @@ var Module;
                         container.style.cssText = EMOJI_CONTAINER_STYLE;
                         if (i === this_1.selectNumber) {
                             container.style.backgroundColor = "pink";
-                            this_1.selectedElem = container;
                             this_1.previousNumber = this_1.selectNumber;
                         }
                         ;
@@ -48,17 +46,15 @@ var Module;
                             obj.setItem(String(i), "0");
                         container.addEventListener("click", function (e) {
                             this.selectNumber = i;
-                            if (this.selectedElem)
-                                this.selectedElem.style.backgroundColor = "";
-                            this.selectedElem = e.target;
                             this.onSelect(this.selectNumber, this.containers, this.previousNumber);
+                            if (this.previousNumber !== undefined)
+                                this.containers[this.previousNumber].style.backgroundColor = "";
                             if (this.previousNumber === this.selectNumber) {
                                 this.previousNumber = undefined;
-                                this.selectedElem.style.backgroundColor = "	";
                                 localStorage.setItem("selected", "undefiend");
                             }
                             else {
-                                this.selectedElem.style.backgroundColor = "pink";
+                                this.containers[this.selectNumber].style.backgroundColor = "pink";
                                 this.previousNumber = this.selectNumber;
                                 localStorage.setItem("selected", this.selectNumber);
                             }
