@@ -1,4 +1,5 @@
-﻿class Greeter {
+﻿
+class Greeter {
     element: HTMLElement;
     span: HTMLElement;
     timerToken: number;
@@ -22,7 +23,9 @@
 }
 
 window.onload = () => {
+
     var el = document.getElementById('content');
-    var greeter = new Greeter(el);
+	var greeter = new Greeter(el);
+	var reactions = new Module.ReactionsModule(document.querySelector(".reactions"), "Da da ya", ["😇", "😅", "😎"]);
     greeter.start();
 };
