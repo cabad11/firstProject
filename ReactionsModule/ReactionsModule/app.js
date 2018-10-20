@@ -2,7 +2,7 @@ var Greeter = /** @class */ (function () {
     function Greeter(element) {
         this.element = element;
         this.element.innerHTML += "The time is: ";
-        this.span = document.createElement('span');
+        this.span = document.createElement("span");
         this.element.appendChild(this.span);
         this.span.innerText = new Date().toUTCString();
     }
@@ -16,9 +16,13 @@ var Greeter = /** @class */ (function () {
     return Greeter;
 }());
 window.onload = function () {
-    var el = document.getElementById('content');
+    var el = document.getElementById("content");
     var greeter = new Greeter(el);
-    var reactions = new Module.ReactionsModule(document.querySelector(".reactions"), "Da da ya", ["😇", "😅", "😎"]);
+    var reactions = new Module.ReactionsModule({
+        RootElement: document.querySelector(".reactions"),
+        text: "Da da ya",
+        arrayEmoji: ["😇", "😅", "😎", "😎"]
+    });
     greeter.start();
 };
 //# sourceMappingURL=app.js.map

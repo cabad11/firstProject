@@ -65,7 +65,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="app.css" />
+    <Content Include="correction.txt" />
     <Content Include="index.html" />
+    <None Include="package.json" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
