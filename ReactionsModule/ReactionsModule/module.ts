@@ -25,100 +25,136 @@ namespace Module {
 	margin:5%;
 	font-size:4ex;`;
 	type container = HTMLElement & { smileNumber?: number };
+	type onSelectType = (x: number, d: number, c: container[], storage: SmileStorage) => void;
+	type newString = string & { codePointAt?(x: number): number };
 	interface Iconfig {
-		arrayEmoji: Array<string & { codePointAt?(x: number): number }>;
-		Storage?: Storage | Array<number> | object;
+		arrayEmoji: newString[];
 		RootElement: HTMLElement;
+		Storage?: Storage | number[] | object;
 		text: string;
-		saveFunc?: (key: string | number, value: string | number) => void;
+		saveFunc?(key: string | number, value: string | number): void;
 	}
 	class SmileStorage {
-		constructor(private Storage: Storage | Array<number> | object, saveFunc?: (key: string | number, value: string | number) => void) {
-			if (saveFunc !== undefined) this.setItem = saveFunc;
+		public constructor(private Storage: Storage | number[] | object,
+			saveFunc?: (key: string | number, value: string | number) => void) {
+			if (saveFunc !== undefined) { this.setItem = saveFunc; }
 		}
 		public getItem(key: string | number): string {
-			if ("getItem" in Storage) var result: string = (<Storage>this.Storage).getItem(`${key}`);
-			else result = this.Storage[key];
-			if (result === null) result = undefined;
-			return result
+			if ("getItem" in Storage) { var result: string = (this.Storage as Storage).getItem(`${key}`); }
+			else { result = this.Storage[key]; }
+			if (result === null) { result = undefined; }
+			return result;
 		}
-		public setItem(key: string | number, value: string | number) {
-			if ("setItem" in Storage) (<Storage>this.Storage).setItem(`${key}`, String(value));
-			else this.Storage[key] = String(value);
+		public setItem(key: string | number, value: string | number): void {
+			if ("setItem" in Storage) { (this.Storage as Storage).setItem(`${key}`, String(value)); }
+			else { this.Storage[key] = String(value); }
+		}
+	}
+	namespace Render {
+		let selectNumber: number | undefined = localStorage.getItem("selected") === null ?
+			Infinity : +localStorage.getItem("selected");
+		export function render(config: Iconfig, onSelect: onSelectType): void {
+			if (config.Storage) { Storage = new SmileStorage(config.Storage, config.saveFunc); }
+			_filler = CreateFiller();
+			CreateText(config.text);
+			CreateCounters(config, onSelect)
+				.forEach((elem: HTMLElement) => _filler.appendChild(elem));  // Insert containers into filler
+			config.RootElement.appendChild(_filler);
+		}
+		let _filler: HTMLElement;
+		let previousNumber: number | undefined;
+		let Storage: SmileStorage = new SmileStorage(localStorage);
+		function CreateCounters(config: Iconfig, onSelect: onSelectType): container[] {
+			const containers: container[] = [];
+			for (let i: number = 0; i < config.arrayEmoji.length; i++) {
+				const emot: string & { codePointAt?(x: number): number; } = config.arrayEmoji[i];
+				const MAX_EMOT_LENGTH: number = 3;
+				if (emot.length < MAX_EMOT_LENGTH) {
+						const container: container = CreateContainer(i);
+
+						const emoji: HTMLElement = CreateEmoji(i, emot);
+						container.addEventListener("click", function(e: MouseEvent): void {
+							onContainerClick(i, onSelect, containers);
+						}.bind(this));
+						containers.push(container);
+						container.appendChild(emoji);
+					}
+			}
+			return containers;
+		}
+		function CreateEmoji(i: number, emot: newString): HTMLElement {
+			const emoji: HTMLElement = document.createElement("div");
+			emoji.textContent = Storage.getItem(String(i));
+			emoji.style.cssText = EMOJI_STYLE;
+			const code: string = (emot.codePointAt(0)).toString(16);
+			emoji.style.backgroundImage = `url(https://badoocdn.com/big/chat/emoji@x2/${code}.png)`;
+			return emoji;
+		}
+
+		function CreateContainer(i: number): HTMLElement {
+			const container: container = document.createElement("div");
+			container.style.cssText = EMOJI_CONTAINER_STYLE;
+			if (i === selectNumber) {
+				container.style.backgroundColor = "pink";
+				previousNumber = selectNumber;
+			}
+			if (Storage.getItem(String(i)) === undefined) {
+				Storage.setItem(String(i), "0");
+			}
+			return container;
+		}
+
+		function CreateFiller(): HTMLElement {
+			const filler: HTMLElement = document.createElement("div");
+		 filler.style.cssText = EMOJI_FILLER_STYLE;
+		 return filler;
+		}
+
+		function onContainerClick(i: number, onSelect: onSelectType,
+			containers: container[]): void {
+			selectNumber = i;
+			onSelect(selectNumber, previousNumber, containers, Storage);
+			if (previousNumber !== undefined) {
+				containers[previousNumber].style.backgroundColor = "";
+			}
+			if (previousNumber === selectNumber) {
+				previousNumber = undefined;
+				localStorage.setItem("selected", "undefiend");
+			} else {
+				containers[selectNumber].style.backgroundColor = "pink";
+				previousNumber = selectNumber;
+				localStorage.setItem("selected", `${selectNumber}`);
+			}
+		}
+		// Create Text element and insert it
+		function CreateText(text: string): void {
+			const span: HTMLElement = document.createElement("span");
+		 span.style.cssText = INNERSPAN_STYLE;
+		 if (text) {
+			span.textContent = text;
+		}
+		 _filler.appendChild(span);
 		}
 	}
 	export class ReactionsModule {
-		public set Text(value: string) {
-			if (typeof (value) === "string") { this._text.textContent = value; } else { console.log("данные некорректны"); }
-		}
 		public RootElement: HTMLElement;
-		public selectNumber: number | undefined = localStorage.getItem("selected") === undefined ?
-			Infinity : +localStorage.getItem("selected");
-		private _filler: HTMLElement;
-		private _text: HTMLElement = document.createElement("span");
-		private containers: container[] = [];
-		private Storage: SmileStorage = new SmileStorage(localStorage);
-		private previousNumber: number | undefined;
 		public constructor(config: Iconfig) {
-			if (config.Storage) { this.Storage = new SmileStorage(config.Storage, config.saveFunc); }
 			this.RootElement = config.RootElement;
-			this._filler = document.createElement("div");
-			this._filler.style.cssText = EMOJI_FILLER_STYLE;
-			this._text = document.createElement("span");
-			this._text.style.cssText = INNERSPAN_STYLE;
-			if (config.text) { this.Text = config.text; }
-			if (config.arrayEmoji) {
-				for (let i: number = 0; i < config.arrayEmoji.length; i++) {
-					const emot: string & { codePointAt?(x: number): number  } = config.arrayEmoji[i];
-					if (emot.length < 3) {
-						const container: container = document.createElement("div");
-						this.containers.push(container);
-						container.style.cssText = EMOJI_CONTAINER_STYLE;
-						if (i === this.selectNumber) {
-							container.style.backgroundColor = "pink";
-							this.previousNumber = this.selectNumber;
-						}
-						if (this.Storage.getItem(String(i)) === null) { this.Storage.setItem(String(i), "0"); }
-						container.addEventListener("click", function(e: MouseEvent): void {
-							this.selectNumber = i;
-							this.onSelect(this.selectNumber, this.previousNumber, this.containers, this.Storage);
-							if (this.previousNumber !== undefined) { this.containers[this.previousNumber].style.backgroundColor = ""; }
-							if (this.previousNumber === this.selectNumber) {
-								this.previousNumber = undefined;
-								localStorage.setItem("selected", "undefiend");
-							} else {
-								this.containers[this.selectNumber].style.backgroundColor = "pink";
-								this.previousNumber = this.selectNumber;
-								localStorage.setItem("selected", this.selectNumber);
-							}
-						}.bind(this));
-						const emoji: HTMLElement = document.createElement("div");
-						emoji.textContent = this.Storage.getItem(String(i));
-						emoji.style.cssText = EMOJI_STYLE;
-						const code: string = (emot.codePointAt(0)).toString(16);
-						emoji.style.backgroundImage = `url(https://badoocdn.com/big/chat/emoji@x2/${code}.png)`;
-						container.appendChild(emoji);
-						this._filler.appendChild(container);
-					} else { throw new Error("длина смайла =" + emot.length); }
-				}
-			}
-			this._filler.appendChild(this._text);
-			config.RootElement.appendChild(this._filler);
+			Render.render(config, this.onSelect);
 		}
-		public onSelect: (x: number, d: number, c: container[], storage: SmileStorage) => void
-			= function (selectNum: number, previousNumber: number, containers: container[], storage: SmileStorage): void {
-				console.log(storage);
-			if (previousNumber !== undefined) {
+		// Work with storage
+		public onSelect: onSelectType =
+			function(selectNum: number, previousNumber: number, containers: container[], storage: SmileStorage): void {
+			 if (previousNumber !== undefined) {
 				storage.setItem(String(previousNumber), String(+storage.getItem(String(previousNumber)) - 1));
 				containers[previousNumber].children[0].textContent = storage.getItem(String(previousNumber));
 			}
-			if (previousNumber === selectNum) {
-				previousNumber = undefined;
+			 if (previousNumber === selectNum) {
 				return;
 			}
-
-				this.Storage.setItem(String(selectNum), String(+this.Storage.getItem(String(selectNum)) + 1));
-				containers[selectNum].children[0].textContent = this.Storage.getItem(String(selectNum));
+				storage.setItem(String(selectNum), String(+storage.getItem(String(selectNum)) + 1));
+				containers[selectNum].children[0].textContent = storage.getItem(String(selectNum));
 		};
+
 	}
 }
