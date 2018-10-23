@@ -1,6 +1,5 @@
 namespace Module {
 	const EMOJI_FILLER_STYLE: string = `
-	background-color:grey;
 	width:100%;
 	height: 100%;
 	display:flex;
@@ -12,18 +11,22 @@ namespace Module {
 	height:100%;
 	flex:1 1 auto;
 	display:flex;
-	align-items:stretch`;
+	align-items:stretch;`;
 	const EMOJI_STYLE: string = `
 	flex:1 1 auto;
 	background:  no-repeat;
 	background-size: cover 100% 100%;
 	backround-origin:content-box;
 	background-size:contain;
-	border:1px solid`;
+	`;
 	const INNERSPAN_STYLE: string = `
 	order:-1;
 	margin:5%;
 	font-size:4ex;`;
+	const TEXT_COUNT_STYLE: string = `
+	height:100%;
+	flex:0 1 auto;
+	`;
 	type container = HTMLElement & { smileNumber?: number };
 	type onSelectType = (x: number, d: number, c: container[], storage: SmileStorage) => void;
 	type newString = string & { codePointAt?(x: number): number };
@@ -65,7 +68,7 @@ namespace Module {
 			else { this.Storage[key] = String(value); }
 		}
 	}
-	class Render {
+	class Renderer {
 		public containers: container[] = [];
 		private _holder: HTMLElement;
 
@@ -97,6 +100,11 @@ namespace Module {
 			}.bind(this));
 			return container;
 		}
+		/**
+		 * Create array of counters
+		 * @param config- Module parameters
+		 * @param onContainerClick- use on click
+		 */
 		private CreateCounters(config: Iconfig, onContainerClick: (i: number) => void): container[] {
 
 			for (let i: number = 0; i < config.arrayEmoji.length; i++) {
@@ -106,11 +114,26 @@ namespace Module {
 					const container: container = this.CreateContainer(i, onContainerClick);
 
 					const emoji: HTMLElement = this.CreateEmoji(i, emot);
+
+					const count: HTMLElement = this.CreateCountText(i);
+
 					this.containers.push(container);
 					container.appendChild(emoji);
-					}
+					container.appendChild(count);
+				}
 			}
 			return this.containers;
+		}
+		/**
+		 * Create elem which show counter
+		 * @param i i - number of container
+		 */
+		private CreateCountText(i: number): HTMLElement {
+			let elem: HTMLElement = document.createElement("div");
+			let count: string = this.Storage.getItem(String(i)) === undefined ? "0" : this.Storage.getItem(String(i));
+			elem.textContent = count;
+			elem.style.cssText = TEXT_COUNT_STYLE;
+			return elem;
 		}
 		/**
 		 * Create elem with emotion
@@ -119,8 +142,6 @@ namespace Module {
 		 */
 		private CreateEmoji(i: number, emot: newString): HTMLElement {
 			const emoji: HTMLElement = document.createElement("div");
-			let count: string = this.Storage.getItem(String(i)) === undefined ? "0" : this.Storage.getItem(String(i));
-			emoji.textContent = count;
 			emoji.style.cssText = EMOJI_STYLE;
 			const code: string = (emot.codePointAt(0)).toString(16);
 			emoji.style.backgroundImage = `url(https://badoocdn.com/big/chat/emoji@x2/${code}.png)`;
@@ -152,7 +173,7 @@ namespace Module {
 
 		public RootElement: HTMLElement;
 		private previousNumber: number | undefined;
-		private Rendering: Render;
+		private Rendering: Renderer;
 		private selectNumber: number | undefined = localStorage.getItem("selected") === null ?
 			Infinity : +localStorage.getItem("selected");
 		private Storage: SmileStorage = new SmileStorage(localStorage);
@@ -164,7 +185,7 @@ namespace Module {
 			this.onContainerClick = this.onContainerClick.bind(this);
 			this.RootElement = config.RootElement;
 			if (config.Storage) { this.Storage = new SmileStorage(config.Storage, config.saveFunc); }
-			this.Rendering = new Render(config, this.onContainerClick);
+			this.Rendering = new Renderer(config, this.onContainerClick);
 			this.setValues();
 		}
 			/**
@@ -175,11 +196,10 @@ namespace Module {
 			 * @param {SmileStorage} storage
 			 */
 		public onSelect(selectNum: number, previousNumber: number, containers: container[], storage: SmileStorage): void {
-			if (previousNumber !== undefined) {
+			if (!(this.previousNumber === undefined || this.previousNumber === NaN)) {
 				let count: number = this.Storage.getItem(String(previousNumber)) === undefined ? 0
 					: +this.Storage.getItem(String(previousNumber));
 				storage.setItem(String(previousNumber), String(+count - 1));
-				containers[previousNumber].children[0].textContent = storage.getItem(String(previousNumber));
 			}
 			if (previousNumber === selectNum) {
 				return;
@@ -187,7 +207,6 @@ namespace Module {
 			let count: number = this.Storage.getItem(String(selectNum)) === undefined ? 0
 				: +this.Storage.getItem(String(selectNum));
 			storage.setItem(String(selectNum), String(count + 1));
-			containers[selectNum].children[0].textContent = storage.getItem(String(selectNum));
 		}
 		/**
 		 * Use on click
@@ -202,17 +221,20 @@ namespace Module {
 			 * Set previous number and shows selected counter
 			 */
 		private setValues(): void {
-			if (this.previousNumber !== undefined) {
+			if (!(this.previousNumber === undefined || this.previousNumber === NaN)) {
 				this.Rendering.containers[this.previousNumber].style.backgroundColor = "";
+				if (this.previousNumber !== undefined)
+					this.Rendering.containers[this.previousNumber].children[1].textContent = this.Storage.getItem(String(this.previousNumber));
 			}
 			if (this.previousNumber === this.selectNumber) {
 				this.previousNumber = undefined;
 				localStorage.setItem("selected", "undefiend");
 			}
 			else {
-				this.Rendering.containers[this.selectNumber].style.backgroundColor = "pink";
+				if (this.selectNumber !== undefined) { this.Rendering.containers[this.selectNumber].style.backgroundColor = "pink"; }
 				this.previousNumber = this.selectNumber;
 				localStorage.setItem("selected", `${this.selectNumber}`);
+				this.Rendering.containers[this.selectNumber].children[1].textContent = this.Storage.getItem(String(this.selectNumber));
 			}
 		}
 	}
