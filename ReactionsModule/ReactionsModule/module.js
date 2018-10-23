@@ -43,7 +43,7 @@ var Module;
             }
             _filler = CreateFiller();
             CreateText(config.text);
-            CreateCounters(config, onSelect)
+            CreateCounters(config, onSelect) // create array of containers
                 .forEach(function (elem) { return _filler.appendChild(elem); }); // Insert containers into filler
             config.RootElement.appendChild(_filler);
         }
@@ -51,24 +51,17 @@ var Module;
         var _filler;
         var previousNumber;
         var Storage = new SmileStorage(localStorage);
+        var containers = [];
         function CreateCounters(config, onSelect) {
-            var containers = [];
-            var _loop_1 = function (i) {
+            for (var i = 0; i < config.arrayEmoji.length; i++) {
                 var emot = config.arrayEmoji[i];
                 var MAX_EMOT_LENGTH = 3;
                 if (emot.length < MAX_EMOT_LENGTH) {
-                    var container = CreateContainer(i);
+                    var container = CreateContainer(i, onSelect);
                     var emoji = CreateEmoji(i, emot);
-                    container.addEventListener("click", function (e) {
-                        onContainerClick(i, onSelect, containers);
-                    }.bind(this_1));
                     containers.push(container);
                     container.appendChild(emoji);
                 }
-            };
-            var this_1 = this;
-            for (var i = 0; i < config.arrayEmoji.length; i++) {
-                _loop_1(i);
             }
             return containers;
         }
@@ -80,7 +73,7 @@ var Module;
             emoji.style.backgroundImage = "url(https://badoocdn.com/big/chat/emoji@x2/" + code + ".png)";
             return emoji;
         }
-        function CreateContainer(i) {
+        function CreateContainer(i, onSelect) {
             var container = document.createElement("div");
             container.style.cssText = EMOJI_CONTAINER_STYLE;
             if (i === selectNumber) {
@@ -90,6 +83,9 @@ var Module;
             if (Storage.getItem(String(i)) === undefined) {
                 Storage.setItem(String(i), "0");
             }
+            container.addEventListener("click", function (e) {
+                onContainerClick(i, onSelect, containers);
+            }.bind(this));
             return container;
         }
         function CreateFiller() {
