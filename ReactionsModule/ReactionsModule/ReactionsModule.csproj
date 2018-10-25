@@ -62,18 +62,20 @@
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
+    <Content Include="ReadMe.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="app.css" />
-    <Content Include="correction.txt" />
     <Content Include="index.html" />
     <None Include="package.json" />
-    <Content Include="ReadMe.txt" />
+    <Content Include="module.css" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="module.ts" />
+    <TypeScriptCompile Include="renderer.ts" />
+    <TypeScriptCompile Include="storage.ts" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />

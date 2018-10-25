@@ -19,9 +19,9 @@ window.onload = function () {
     var el = document.getElementById("content");
     var greeter = new Greeter(el);
     var reactions = new Module.ReactionsModule({
-        RootElement: document.querySelector(".reactions"),
-        text: "Da da ya",
-        arrayEmoji: ["😇", "😅", "😎", "😎"]
+        rootElement: document.querySelector(".reactions"),
+        text: "How do you like this article?",
+        arrayEmoji: ["👍", "🤔", "👎"]
     });
     greeter.start();
 };
