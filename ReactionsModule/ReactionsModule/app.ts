@@ -1,22 +1,21 @@
-﻿
 class Greeter {
-    element: HTMLElement;
-    span: HTMLElement;
-    timerToken: number;
+    public element: HTMLElement;
+    public span: HTMLElement;
+    public timerToken: number;
 
-    constructor(element: HTMLElement) {
+    public constructor(element: HTMLElement) {
         this.element = element;
         this.element.innerHTML += "The time is: ";
-        this.span = document.createElement('span');
+        this.span = document.createElement("span");
         this.element.appendChild(this.span);
         this.span.innerText = new Date().toUTCString();
     }
 
-    start() {
+    public start() {
         this.timerToken = setInterval(() => this.span.innerHTML = new Date().toUTCString(), 500);
     }
 
-    stop() {
+    public stop() {
         clearTimeout(this.timerToken);
     }
 
@@ -24,8 +23,12 @@ class Greeter {
 
 window.onload = () => {
 
-    var el = document.getElementById('content');
-	var greeter = new Greeter(el);
-	var reactions = new Module.ReactionsModule(document.querySelector(".reactions"), "Da da ya", ["😇", "😅", "😎"]);
+    const el = document.getElementById("content");
+	   const greeter = new Greeter(el);
+	const reactions = new Module.ReactionsModule({
+		rootElement: document.querySelector(".reactions"),
+		text: "How do you like this article?",
+		arrayEmoji: ["👍", "🤔", "👎"]
+	});
     greeter.start();
 };

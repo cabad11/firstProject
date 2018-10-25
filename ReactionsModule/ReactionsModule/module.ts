@@ -1,99 +1,94 @@
-﻿namespace Module {
-	const EMOJI_FILLER_STYLE = `
-	background-color:grey;	
-	width:100%;
-	height: 100%;
-	display:flex;
-	justify-content:center;
-	flex-wrap:wrap;
-	align-items:center;
-	`;
-	const EMOJI_CONTAINER_STYLE = `
-	height:100%;
-	flex:1 1 auto;
-	display:flex;
-	align-items:stretch`;
-	const EMOJI_STYLE = `
-	flex:1 1 auto;
-	background:  no-repeat;
-	background-size: cover 100% 100%;
-	backround-origin:content-box;
-	background-size:contain;
-	border:1px solid`;
-	const INNERSPAN_STYLE = `
-	order:-1;
-	margin:5%;
-	font-size:4ex;`;
-	type container = HTMLElement & { smileNumber?: number };
+namespace Module {
+	type onSelectType = (x: number, d: number, c: HTMLElement[], storage: SmileStorage) => void;
+	type newString = string & { codePointAt?(x: number): number };
+	interface Iconfig {
+		arrayEmoji: newString[];
+		rootElement: HTMLElement;
+		storage?: Storage | number[] | object;
+		text: string;
+		saveFunc?(key: string | number, value: string | number): void;
+	}
 	export class ReactionsModule {
-		private _filler: HTMLElement;
-		private _innerspan: HTMLElement = document.createElement("span");
-		private previousNumber: number | undefined;
-		private containers: Array<container>=[];
-		public selectNumber: number | undefined = localStorage.getItem("selected") === undefined || localStorage.getItem("selected") === null ? Infinity: +localStorage.getItem("selected");
-		public set Text(value: string) {		
-			if (typeof (value) == "string") this._innerspan.textContent = value;
-			else console.log("данные некорректны");
-		}
-		public onSelect: (x: number, c: Array<container>, d: number) => void = function (selectNum: number, containers: Array<container>, previousNumber: number): void {
-			
 
-			if (previousNumber !== undefined) {
-				this.obj.setItem(String(previousNumber), String(+this.obj.getItem(String(previousNumber)) - 1));
-				containers[previousNumber].children[0].textContent = this.obj.getItem(String(previousNumber));
+		public RootElement: HTMLElement;
+		private previousNumber: number | undefined;
+		private Rendering: Renderer;
+		private selectNumber: number | undefined = localStorage.getItem("selected") === null ?
+			undefined : +localStorage.getItem("selected");
+		private storage: SmileStorage ;
+		/**
+		 * Create Module
+		 * @param config - Module parameters
+		 */
+		public constructor(config: Iconfig) {
+			this.onContainerClick = this.onContainerClick.bind(this);
+			this.RootElement = config.rootElement;
+			this.Rendering = new Renderer(config, this.onContainerClick);
+			this.storage = this.Rendering.storage;
+			this.setValues();
+		}
+			/**
+			 * Work with Storage
+			 */
+		public onSelect(): void {
+			if (this.previousNumber !== undefined) {
+				let count: number = this.storage.getItem(String(this.previousNumber)) === undefined ? 0
+					: +this.storage.getItem(String(this.previousNumber));
+				this.storage.setItem(String(this.previousNumber), String(+count - 1));
 			}
-			if (previousNumber === selectNum) {
-				previousNumber = undefined;
+			if (this.previousNumber === this.selectNumber) {
 				return;
 			}
-				
-			this.obj.setItem(String(selectNum), String(+this.obj.getItem(String(selectNum)) + 1));
-			containers[selectNum].children[0].textContent = this.obj.getItem(String(selectNum));	
-		};
-		constructor(public element: HTMLElement, text: string, arrayEmoji: any[], private obj: Storage = localStorage) {
-			this._filler = document.createElement("div");
-			this._filler.style.cssText = EMOJI_FILLER_STYLE;
-			this._innerspan = document.createElement("span");
-			this._innerspan.style.cssText = INNERSPAN_STYLE;
-			if (text) this.Text = text;	
-			if (arrayEmoji)
-				for (let i = 0; i<arrayEmoji.length; i++) {
-					var emot: any = arrayEmoji[i];
-					if (emot.length < 3) {
-						let container: container = document.createElement("div");
-						this.containers.push(container);
-						container.style.cssText = EMOJI_CONTAINER_STYLE;
-						if (i === this.selectNumber) {	
-							container.style.backgroundColor = "pink";
-							this.previousNumber = this.selectNumber;
-						};
-						if (obj.getItem(String(i)) === null) obj.setItem(String(i), "0");
-						container.addEventListener("click", function (e: MouseEvent): void {
-							this.selectNumber =i;
-							this.onSelect(this.selectNumber, this.containers, this.previousNumber);
-							if (this.previousNumber !== undefined) this.containers[this.previousNumber].style.backgroundColor = "";
-							if (this.previousNumber === this.selectNumber) {
-								this.previousNumber = undefined;
-								localStorage.setItem("selected", "undefiend");
-							}
-							else {
-								this.containers[this.selectNumber].style.backgroundColor = "pink";
-								this.previousNumber = this.selectNumber;
-								localStorage.setItem("selected", this.selectNumber);
-							}
-						}.bind(this))
-						var emoji: HTMLElement = document.createElement("div");
-						emoji.textContent = obj.getItem(String(i));
-						emoji.style.cssText = EMOJI_STYLE;
-						var code: string = (emot.codePointAt(0)).toString(16);
-						emoji.style.backgroundImage = `url(https://badoocdn.com/big/chat/emoji@x2/${code}.png)`;
-						container.appendChild(emoji);
-						this._filler.appendChild(container);
-					}	
-					else console.log("длина смайла =" + emot.length);
-				}
-			this._filler.appendChild(this._innerspan);
-			element.appendChild(this._filler);
-		};
+			let count: number = this.storage.getItem(String(this.selectNumber)) === undefined ? 0
+				: +this.storage.getItem(String(this.selectNumber));
+			this.storage.setItem(String(this.selectNumber), String(count + 1));
+		}
+		/**
+		 * Use on click
+		 * @param {number} i number of clicked container
+		 */
+		private onContainerClick(i: number): void {
+			this.selectNumber = i;
+			this.onSelect();
+			this.setValues();
+		}
+		/**
+		 * Unselect element
+		 */
+		private selectElem(): void {
+			const containers: HTMLElement[] = this.Rendering.containers;
+			containers[this.selectNumber].querySelector(".emoji").classList
+				.add("selected");
+			this.previousNumber = this.selectNumber;
+			localStorage.setItem("selected", `${this.selectNumber}`);
+			containers[this.selectNumber].querySelector(".countText").textContent =
+				this.storage.getItem(String(this.selectNumber));
+		}
+		/**
+			 * Set previous number and shows selected counter
+			 */
+		private setValues(): void {
+
+			if (this.previousNumber !== undefined) {
+				this.unSelectElem();
+			}
+			if (this.previousNumber === this.selectNumber) {
+				this.previousNumber = undefined;
+				localStorage.removeItem("selected");
+				return;
+			}
+			this.selectElem();
+
+		}
+		/**
+		 * Select element
+		 */
+		private unSelectElem(): void {
+			const containers: HTMLElement[] = this.Rendering.containers;
+			containers[this.previousNumber].querySelector(".emoji").classList
+				.remove("selected");
+			containers[this.previousNumber].querySelector(".countText").textContent =
+				this.storage.getItem(String(this.previousNumber));
+		}
 	}
 }

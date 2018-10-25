@@ -5,7 +5,10 @@
 span {
     font-style: italic;
 }
+body {
+	margin: 0;
+}
 .reactions {
-width:100vw;
-height:10vh;
+	width: 98vw;
+	height: 10vh;
 }
