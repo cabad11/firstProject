@@ -6,10 +6,10 @@ var Module;
          * @param config - Module parameters
          */
         function ReactionsModule(config) {
-            this.selectNumber = localStorage.getItem("selected") === null ?
-                undefined : +localStorage.getItem("selected");
+            this.selectNumber = localStorage.getItem('selected') === null ?
+                undefined : +localStorage.getItem('selected');
             this.onContainerClick = this.onContainerClick.bind(this);
-            this.RootElement = config.rootElement;
+            this.rootElement = config.rootElement;
             this.Rendering = new Renderer(config, this.onContainerClick);
             this.storage = this.Rendering.storage;
             this.setValues();
@@ -43,24 +43,24 @@ var Module;
          * Unselect element
          */
         ReactionsModule.prototype.selectElem = function () {
-            var containers = this.Rendering.containers;
-            containers[this.selectNumber].querySelector(".emoji").classList
-                .add("selected");
             this.previousNumber = this.selectNumber;
-            localStorage.setItem("selected", "" + this.selectNumber);
-            containers[this.selectNumber].querySelector(".countText").textContent =
+            localStorage.setItem('selected', "" + this.selectNumber);
+            var containers = this.Rendering.containers;
+            containers[this.selectNumber].querySelector('.emoji').classList
+                .add('selected');
+            containers[this.selectNumber].querySelector('.countText').textContent =
                 this.storage.getItem(String(this.selectNumber));
         };
         /**
-             * Set previous number and shows selected counter
-             */
+         * Set previous number and shows selected counter
+         */
         ReactionsModule.prototype.setValues = function () {
             if (this.previousNumber !== undefined) {
                 this.unSelectElem();
             }
             if (this.previousNumber === this.selectNumber) {
                 this.previousNumber = undefined;
-                localStorage.removeItem("selected");
+                localStorage.removeItem('selected');
                 return;
             }
             this.selectElem();
@@ -70,9 +70,9 @@ var Module;
          */
         ReactionsModule.prototype.unSelectElem = function () {
             var containers = this.Rendering.containers;
-            containers[this.previousNumber].querySelector(".emoji").classList
-                .remove("selected");
-            containers[this.previousNumber].querySelector(".countText").textContent =
+            containers[this.previousNumber].querySelector('.emoji').classList
+                .remove('selected');
+            containers[this.previousNumber].querySelector('.countText').textContent =
                 this.storage.getItem(String(this.previousNumber));
         };
         return ReactionsModule;

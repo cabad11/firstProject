@@ -10,11 +10,11 @@ namespace Module {
 	}
 	export class ReactionsModule {
 
-		public RootElement: HTMLElement;
+		public rootElement: HTMLElement;
 		private previousNumber: number | undefined;
 		private Rendering: Renderer;
-		private selectNumber: number | undefined = localStorage.getItem("selected") === null ?
-			undefined : +localStorage.getItem("selected");
+		private selectNumber: number | undefined = localStorage.getItem('selected') === null ?
+			undefined : +localStorage.getItem('selected');
 		private storage: SmileStorage ;
 		/**
 		 * Create Module
@@ -22,24 +22,24 @@ namespace Module {
 		 */
 		public constructor(config: Iconfig) {
 			this.onContainerClick = this.onContainerClick.bind(this);
-			this.RootElement = config.rootElement;
+			this.rootElement = config.rootElement;
 			this.Rendering = new Renderer(config, this.onContainerClick);
 			this.storage = this.Rendering.storage;
 			this.setValues();
 		}
-			/**
-			 * Work with Storage
-			 */
+		/**
+		 * Work with Storage
+		 */
 		public onSelect(): void {
 			if (this.previousNumber !== undefined) {
-				let count: number = this.storage.getItem(String(this.previousNumber)) === undefined ? 0
+				const count: number = this.storage.getItem(String(this.previousNumber)) === undefined ? 0
 					: +this.storage.getItem(String(this.previousNumber));
 				this.storage.setItem(String(this.previousNumber), String(+count - 1));
 			}
 			if (this.previousNumber === this.selectNumber) {
 				return;
 			}
-			let count: number = this.storage.getItem(String(this.selectNumber)) === undefined ? 0
+			const count: number = this.storage.getItem(String(this.selectNumber)) === undefined ? 0
 				: +this.storage.getItem(String(this.selectNumber));
 			this.storage.setItem(String(this.selectNumber), String(count + 1));
 		}
@@ -56,27 +56,30 @@ namespace Module {
 		 * Unselect element
 		 */
 		private selectElem(): void {
-			const containers: HTMLElement[] = this.Rendering.containers;
-			containers[this.selectNumber].querySelector(".emoji").classList
-				.add("selected");
 			this.previousNumber = this.selectNumber;
-			localStorage.setItem("selected", `${this.selectNumber}`);
-			containers[this.selectNumber].querySelector(".countText").textContent =
+			localStorage.setItem('selected', `${this.selectNumber}`);
+
+			const containers: HTMLElement[] = this.Rendering.containers;
+			containers[this.selectNumber].querySelector('.emoji').classList
+				.add('selected');
+			containers[this.selectNumber].querySelector('.countText').textContent =
 				this.storage.getItem(String(this.selectNumber));
 		}
 		/**
-			 * Set previous number and shows selected counter
-			 */
+		 * Set previous number and shows selected counter
+		 */
 		private setValues(): void {
 
 			if (this.previousNumber !== undefined) {
 				this.unSelectElem();
 			}
+
 			if (this.previousNumber === this.selectNumber) {
 				this.previousNumber = undefined;
-				localStorage.removeItem("selected");
+				localStorage.removeItem('selected');
 				return;
 			}
+
 			this.selectElem();
 
 		}
@@ -85,9 +88,11 @@ namespace Module {
 		 */
 		private unSelectElem(): void {
 			const containers: HTMLElement[] = this.Rendering.containers;
-			containers[this.previousNumber].querySelector(".emoji").classList
-				.remove("selected");
-			containers[this.previousNumber].querySelector(".countText").textContent =
+
+			containers[this.previousNumber].querySelector('.emoji').classList
+				.remove('selected');
+
+			containers[this.previousNumber].querySelector('.countText').textContent =
 				this.storage.getItem(String(this.previousNumber));
 		}
 	}
