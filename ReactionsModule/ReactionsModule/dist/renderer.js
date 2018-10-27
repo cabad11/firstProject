@@ -1,9 +1,9 @@
 var Renderer = /** @class */ (function () {
     /**
- * Create elements for module
- * @param {Iconfig} config - Module parameters
- * @param {function} onContainerClick - use on container click
- */
+     * Create elements for module
+     * @param {Iconfig} config - Module parameters
+     * @param {function} onContainerClick - use on container click
+     */
     function Renderer(config, onContainerClick) {
         var _this = this;
         this.config = config;
@@ -13,37 +13,37 @@ var Renderer = /** @class */ (function () {
         if (config.storage) {
             this.storage = new SmileStorage(config.storage, config.saveFunc);
         }
-        this._holder = this.CreateHolder();
-        this.CreateText();
-        this.CreateCounters() // Create array of containers
-            .forEach(function (elem) { return _this._holder.appendChild(elem); }); // Insert containers into filler
+        this._holder = this.createHolder();
+        this.createText();
+        this.createCounters()
+            .forEach(function (elem) { return _this._holder.appendChild(elem); });
         config.rootElement.appendChild(this._holder);
     }
     /**
      * Create counter container
      * @param {number} i - number of container
      */
-    Renderer.prototype.CreateContainer = function (i) {
+    Renderer.prototype.createContainer = function (i) {
         var _this = this;
-        var container = this.createElement("div", "container");
-        container.addEventListener("click", (function (e) {
+        var container = this.createElement('div', 'container');
+        container.addEventListener('click', function (e) {
             _this.onContainerClick(i);
-        }).bind(this));
+        });
         return container;
     };
     /**
      * Create array of counters
      */
-    Renderer.prototype.CreateCounters = function () {
+    Renderer.prototype.createCounters = function () {
         var _this = this;
         this.config.arrayEmoji.forEach(function (item, i) {
             var MAX_EMOT_LENGTH = 2;
             if (item.length > MAX_EMOT_LENGTH) {
                 return;
             }
-            var container = _this.CreateContainer(i);
-            var emoji = _this.CreateEmoji(i, item);
-            var count = _this.CreateCountText(i);
+            var container = _this.createContainer(i);
+            var emoji = _this.createEmoji(i, item);
+            var count = _this.createCountText(i);
             _this.containers.push(container);
             container.appendChild(emoji);
             container.appendChild(count);
@@ -54,9 +54,9 @@ var Renderer = /** @class */ (function () {
      * Create elem which show counter
      * @param i i - number of container
      */
-    Renderer.prototype.CreateCountText = function (i) {
-        var count = this.storage.getItem(String(i)) === undefined ? "0" : this.storage.getItem(String(i));
-        var elem = this.createElement("div", "countText", count);
+    Renderer.prototype.createCountText = function (i) {
+        var count = this.storage.getItem(String(i)) === undefined ? '0' : this.storage.getItem(String(i));
+        var elem = this.createElement('div', 'countText', count);
         return elem;
     };
     /**
@@ -79,10 +79,10 @@ var Renderer = /** @class */ (function () {
      * @param {number} i - Number of container
      * @param {string} emot - Emotion symbol
      */
-    Renderer.prototype.CreateEmoji = function (i, emot) {
-        var wrapper = this.createElement("div", "emoji");
+    Renderer.prototype.createEmoji = function (i, emot) {
+        var wrapper = this.createElement('div', 'emoji');
         var emoji = new Image();
-        emoji.classList.add("emojiImg");
+        emoji.classList.add('emojiImg');
         var code = (emot.codePointAt(0)).toString(16);
         emoji.src = "https://badoocdn.com/big/chat/emoji@x2/" + code + ".png";
         wrapper.appendChild(emoji);
@@ -91,17 +91,17 @@ var Renderer = /** @class */ (function () {
     /**
      * Create main element
      */
-    Renderer.prototype.CreateHolder = function () {
-        var filler = this.createElement("div", "holder");
+    Renderer.prototype.createHolder = function () {
+        var filler = this.createElement('div', 'holder');
         return filler;
     };
     /**
      * Create Text element and insert it
      */
-    Renderer.prototype.CreateText = function () {
-        var span = this.createElement("span", "mainText", this.config.text);
+    Renderer.prototype.createText = function () {
+        var span = this.createElement('span', 'mainText', this.config.text);
         this._holder.appendChild(span);
     };
     return Renderer;
 }());
-//# sourceMappingURL=Renderer.js.map
+//# sourceMappingURL=renderer.js.map
